@@ -16,7 +16,7 @@ public class Database {
         return instance;
     }
 
-    public Database() {
+    private Database() {
         Random random = new Random();
         for (int i = 0; i < 20; i++) {
             Note note = new Note(i, "Note " + i, random.nextInt(3));
