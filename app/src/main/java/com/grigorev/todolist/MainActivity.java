@@ -1,5 +1,6 @@
 package com.grigorev.todolist;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -33,6 +34,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
         showNotes();
+        buttonAddNote.setOnClickListener(view -> {
+            Intent intent = AddNoteActivity.newIntent(MainActivity.this);
+            startActivity(intent);
+        });
     }
 
     private void initViews() {
