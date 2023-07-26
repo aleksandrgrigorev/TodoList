@@ -5,6 +5,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
@@ -16,8 +18,8 @@ public class AddNoteActivity extends AppCompatActivity {
     private RadioButton radioButtonLow;
     private RadioButton radioButtonMedium;
     private Button buttonSave;
-
     private NoteDatabase noteDatabase;
+    private Handler handler = new Handler(Looper.getMainLooper());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,9 +45,13 @@ public class AddNoteActivity extends AppCompatActivity {
             String text = editNoteText.getText().toString().trim();
             int priority = getPriority();
             Note note = new Note(text, priority);
-            noteDatabase.notesDao().add(note);
-
-            finish();
+            Thread thread = new Thread(
+                    () -> {
+                        noteDatabase.notesDao().add(note);
+                        handler.post(this::finish);
+                    }
+            );
+            thread.start();
         }
     }
 
