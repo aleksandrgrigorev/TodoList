@@ -5,6 +5,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -16,22 +17,19 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerViewNotes;
     private FloatingActionButton buttonAddNote;
     private NotesAdapter notesAdapter;
-    private NoteDatabase noteDatabase;
+    private MainViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        noteDatabase = NoteDatabase.getInstance(getApplication());
+        viewModel = new ViewModelProvider(this).get(MainViewModel.class);
         initViews();
 
         notesAdapter = new NotesAdapter();
-        notesAdapter.setOnNoteClickListener(note -> {
-        });
         recyclerViewNotes.setAdapter(notesAdapter);
 
-        noteDatabase.notesDao().getNotes().observe(
+        viewModel.getNotes().observe(
                 this,
                 notes -> notesAdapter.setNotes(notes)
         );
@@ -57,11 +55,7 @@ public class MainActivity extends AppCompatActivity {
                     ) {
                         int position = viewHolder.getAdapterPosition();
                         Note note = notesAdapter.getNotes().get(position);
-
-                        Thread thread = new Thread(
-                                () -> noteDatabase.notesDao().remove(note.getId())
-                        );
-                        thread.start();
+                        viewModel.remove(note);
                     }
                 });
         itemTouchHelper.attachToRecyclerView(recyclerViewNotes);
