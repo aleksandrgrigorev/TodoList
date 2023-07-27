@@ -11,6 +11,8 @@ import androidx.lifecycle.MutableLiveData;
 import java.util.List;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.functions.Consumer;
@@ -32,7 +34,7 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     public void refreshList() {
-        Disposable disposable = noteDatabase.notesDao().getNotes()
+        Disposable disposable = getNotesRx()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Consumer<List<Note>>() {
@@ -44,8 +46,12 @@ public class MainViewModel extends AndroidViewModel {
         compositeDisposable.add(disposable);
     }
 
+    private Single<List<Note>> getNotesRx() {
+        return Single.fromCallable(() -> noteDatabase.notesDao().getNotes());
+    }
+
     public void remove(Note note) {
-        Disposable disposable = noteDatabase.notesDao().remove(note.getId())
+        Disposable disposable = removeRx(note)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(() -> {
@@ -53,6 +59,10 @@ public class MainViewModel extends AndroidViewModel {
                     refreshList();
                 });
         compositeDisposable.add(disposable);
+    }
+
+    private Completable removeRx(Note note) {
+        return Completable.fromAction(() -> noteDatabase.notesDao().remove(note.getId()));
     }
 
     @Override
