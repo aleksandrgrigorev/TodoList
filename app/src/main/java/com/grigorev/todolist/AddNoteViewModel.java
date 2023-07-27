@@ -33,15 +33,21 @@ public class AddNoteViewModel extends AndroidViewModel {
         Disposable disposable = saveNoteRx(note)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(() -> {
-                    Log.d("AddNoteViewModel", "subscribe");
-                    shouldCloseScreen.setValue(true);
-                });
+                .subscribe(
+                        () -> {
+                            Log.d("AddNoteViewModel", "subscribe");
+                            shouldCloseScreen.setValue(true);
+                        },
+                        throwable -> Log.d("MainViewModel", "Error saveNote")
+                );
         compositeDisposable.add(disposable);
     }
 
     private Completable saveNoteRx(Note note) {
-        return Completable.fromAction(() -> notesDao.add(note));
+        return Completable.fromAction(() -> {
+//            notesDao.add(note);
+            throw new RuntimeException();
+        });
     }
 
     @Override

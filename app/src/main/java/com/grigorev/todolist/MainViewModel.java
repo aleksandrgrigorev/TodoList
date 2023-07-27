@@ -15,7 +15,6 @@ import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
-import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class MainViewModel extends AndroidViewModel {
@@ -37,12 +36,10 @@ public class MainViewModel extends AndroidViewModel {
         Disposable disposable = getNotesRx()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<List<Note>>() {
-                    @Override
-                    public void accept(List<Note> notesFromDd) throws Throwable {
-                        notes.setValue(notesFromDd);
-                    }
-                });
+                .subscribe(
+                        notesFromDd -> notes.setValue(notesFromDd),
+                        throwable -> Log.d("MainViewModel", "Error refreshList")
+                );
         compositeDisposable.add(disposable);
     }
 
@@ -54,15 +51,22 @@ public class MainViewModel extends AndroidViewModel {
         Disposable disposable = removeRx(note)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(() -> {
-                    Log.d("MainViewModel", "Removed: " + note.getId());
-                    refreshList();
-                });
+                .subscribe(
+                        () -> {
+                            Log.d("MainViewModel", "Removed: " + note.getId());
+                            refreshList();
+                        },
+                        throwable -> Log.d("MainViewModel", "Error remove")
+                );
         compositeDisposable.add(disposable);
     }
 
     private Completable removeRx(Note note) {
-        return Completable.fromAction(() -> noteDatabase.notesDao().remove(note.getId()));
+        return Completable.fromAction(() -> {
+//            noteDatabase.notesDao().remove(note.getId());
+            throw new Exception();
+        });
+
     }
 
     @Override
